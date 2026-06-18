@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&family=Great+Vibes&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  min-width: 320px;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: #F7EEE9;
+  color: #6D5148;
+}
+
+#root {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.premium-input {
+  @apply w-full rounded-2xl border border-gold/25 bg-white/75 px-4 py-3.5 text-base text-cocoa outline-none transition placeholder:text-cocoa/40 focus:border-gold focus:ring-4 focus:ring-gold/15 sm:py-3;
+}
+
+.premium-label {
+  @apply text-[0.68rem] font-bold uppercase leading-relaxed tracking-[0.20em] text-olive/80 sm:text-xs sm:tracking-[0.24em];
+}
+
+.premium-card {
+  @apply rounded-[1.75rem] border border-white/70 bg-white/70 shadow-premium backdrop-blur-xl sm:rounded-[2rem];
+}
+
+.admin-input {
+  @apply w-full rounded-2xl border border-cocoa/10 bg-white px-4 py-3.5 text-base text-cocoa outline-none transition placeholder:text-cocoa/35 focus:border-gold focus:ring-4 focus:ring-gold/15 sm:py-3 sm:text-sm;
+}
+
+.admin-label {
+  @apply mb-2 block text-[0.68rem] font-bold uppercase leading-relaxed tracking-[0.18em] text-cocoa/55 sm:text-xs sm:tracking-[0.22em];
+}
+
+.mobile-card-label {
+  @apply text-[0.64rem] font-bold uppercase tracking-[0.18em] text-cocoa/40;
+}
+
+.mobile-card-value {
+  @apply mt-1 text-sm font-semibold leading-6 text-cocoa/75;
+}
+
+.decor-grain {
+  background-image: linear-gradient(rgba(255,255,255,.32) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.32) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+.paper-texture {
+  background-image:
+    radial-gradient(circle at 22% 18%, rgba(185, 111, 104, .055) 0 1px, transparent 1px),
+    radial-gradient(circle at 80% 42%, rgba(216, 165, 110, .045) 0 1px, transparent 1px),
+    linear-gradient(115deg, rgba(255,255,255,.42), rgba(255,255,255,0) 38%, rgba(255,255,255,.22));
+  background-size: 18px 18px, 26px 26px, 100% 100%;
+}
+
+.shell-gradient {
+  background: radial-gradient(circle at 50% 88%, rgba(255,255,255,.95), rgba(246,199,185,.78) 32%, rgba(185,111,104,.48) 62%, rgba(216,165,110,.36) 100%);
+}
+
+@media (min-width: 640px) {
+  .decor-grain {
+    background-size: 42px 42px;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F7EEE9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(185, 111, 104, .45);
+  border-radius: 999px;
+  border: 2px solid #F7EEE9;
+}

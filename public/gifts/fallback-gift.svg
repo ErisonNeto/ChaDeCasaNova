@@ -1,0 +1,38 @@
+<svg width="1200" height="850" viewBox="0 0 1200 850" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="850" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fbf5ef"/>
+      <stop offset="0.55" stop-color="#f3dfda"/>
+      <stop offset="1" stop-color="#efe0d0"/>
+    </linearGradient>
+    <radialGradient id="pearl" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(600 395) rotate(90) scale(210 260)">
+      <stop stop-color="#ffffff"/>
+      <stop offset="0.5" stop-color="#f6e4d4"/>
+      <stop offset="1" stop-color="#c8897f"/>
+    </radialGradient>
+    <filter id="shadow" x="200" y="150" width="800" height="560" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="35" stdDeviation="40" flood-color="#7A4E43" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="850" fill="url(#bg)"/>
+  <path d="M0 0H1200V850H0V0Z" fill="url(#bg)"/>
+  <g opacity="0.22">
+    <path d="M0 625C175 560 302 610 430 620C635 637 756 540 930 575C1035 596 1110 662 1200 638V850H0V625Z" fill="#DCAFA6"/>
+    <path d="M0 660C195 604 320 642 454 650C676 663 790 596 956 615C1065 628 1118 690 1200 668V850H0V660Z" fill="#fff" opacity="0.35"/>
+  </g>
+  <g filter="url(#shadow)">
+    <path d="M600 205C477 205 365 302 303 456C419 505 520 521 600 521C680 521 781 505 897 456C835 302 723 205 600 205Z" fill="url(#pearl)" stroke="#C99481" stroke-width="7"/>
+    <path d="M299 460C388 576 497 632 600 632C703 632 812 576 901 460C786 511 681 536 600 536C519 536 414 511 299 460Z" fill="#E9B7AD" stroke="#B67869" stroke-width="7"/>
+    <circle cx="600" cy="496" r="62" fill="#F8E7D6"/>
+    <circle cx="600" cy="496" r="43" fill="#FFEEDC" opacity="0.9"/>
+    <path d="M600 225V470" stroke="#C99481" stroke-width="4" opacity="0.55"/>
+    <path d="M530 238C543 326 565 407 595 470" stroke="#C99481" stroke-width="4" opacity="0.45"/>
+    <path d="M670 238C657 326 635 407 605 470" stroke="#C99481" stroke-width="4" opacity="0.45"/>
+    <path d="M458 278C495 354 542 421 592 472" stroke="#C99481" stroke-width="4" opacity="0.38"/>
+    <path d="M742 278C705 354 658 421 608 472" stroke="#C99481" stroke-width="4" opacity="0.38"/>
+    <path d="M372 383C438 426 512 457 594 477" stroke="#C99481" stroke-width="4" opacity="0.32"/>
+    <path d="M828 383C762 426 688 457 606 477" stroke="#C99481" stroke-width="4" opacity="0.32"/>
+  </g>
+  <text x="600" y="735" text-anchor="middle" fill="#9B6A63" font-family="Georgia, 'Times New Roman', serif" font-size="54" letter-spacing="3">Jeyse e Erison</text>
+  <text x="600" y="782" text-anchor="middle" fill="#A98B82" font-family="Arial, sans-serif" font-size="18" letter-spacing="10">CHÁ DE CASA NOVA</text>
+</svg>
