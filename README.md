@@ -218,3 +218,12 @@ where image_url is not null;
 ```
 
 Assim todos os cards passam a tentar carregar imagens reais pelo nome do item. Se alguma busca externa falhar, o card cai em um fallback local específico do produto.
+
+
+## Adicionar presentes extras
+
+Para adicionar os novos presentes sem apagar reservas existentes, rode no Supabase SQL Editor o arquivo:
+
+```txt
+supabase/migration_adiciona_presentes_extra_2026_06_19.sql
+```

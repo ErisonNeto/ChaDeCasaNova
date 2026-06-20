@@ -1,0 +1,50 @@
+-- Adiciona novos presentes extras sem apagar escolhas já feitas.
+-- Pode rodar com segurança no Supabase SQL Editor.
+
+begin;
+
+insert into public.gifts (name, description, image_url, purchase_url, price, created_at)
+select $$Garrafas Acrílicas 1000ml para Geladeira$$, $$Garrafas transparentes para leite, sucos, água, chá e bebidas na geladeira.$$, $$/gifts/30-garrafas-acrilico.svg$$, $$https://shopee.com.br/product/1151779695/58251627000?d_id=da0d5&uls_trackid=55uh4v7r02ct&utm_content=33v3JPYLVNj9NWXAXVwfw1XLnCx7$$, null, coalesce((select max(created_at) from public.gifts), now()) + interval '30 seconds'
+where not exists (select 1 from public.gifts where purchase_url = $$https://shopee.com.br/product/1151779695/58251627000?d_id=da0d5&uls_trackid=55uh4v7r02ct&utm_content=33v3JPYLVNj9NWXAXVwfw1XLnCx7$$ or lower(name) = lower($$Garrafas Acrílicas 1000ml para Geladeira$$));
+
+insert into public.gifts (name, description, image_url, purchase_url, price, created_at)
+select $$Kit 5 Descansos de Panela Madeira Premium 19x19$$, $$Protetores de madeira para panelas e travessas, práticos e elegantes para a mesa.$$, $$/gifts/31-descanso-panela-madeira.svg$$, $$https://www.mercadolivre.com.br/kit-5-descanso-de-panela-protetor-madeira-premium-19x19/up/MLBU3515307082?skipInApp=true&matt_ignore=true$$, null, coalesce((select max(created_at) from public.gifts), now()) + interval '31 seconds'
+where not exists (select 1 from public.gifts where purchase_url = $$https://www.mercadolivre.com.br/kit-5-descanso-de-panela-protetor-madeira-premium-19x19/up/MLBU3515307082?skipInApp=true&matt_ignore=true$$ or lower(name) = lower($$Kit 5 Descansos de Panela Madeira Premium 19x19$$));
+
+insert into public.gifts (name, description, image_url, purchase_url, price, created_at)
+select $$Kit Jogo Americano Sousplat Redondo 38cm$$, $$Conjunto de sousplats redondos para mesa posta, jantar e cozinha.$$, $$/gifts/32-jogo-americano-sousplat.svg$$, $$https://shopee.com.br/product/1223641329/22993050249?d_id=da0d5&rModelId=199163339947&uls_trackid=55uh582m00k6&utm_content=33v3JPYLVU4dMBFpqdNhywX6H9DR&vItemId=22594777637&vModelId=119726930066&vShopId=1665239494$$, null, coalesce((select max(created_at) from public.gifts), now()) + interval '32 seconds'
+where not exists (select 1 from public.gifts where purchase_url = $$https://shopee.com.br/product/1223641329/22993050249?d_id=da0d5&rModelId=199163339947&uls_trackid=55uh582m00k6&utm_content=33v3JPYLVU4dMBFpqdNhywX6H9DR&vItemId=22594777637&vModelId=119726930066&vShopId=1665239494$$ or lower(name) = lower($$Kit Jogo Americano Sousplat Redondo 38cm$$));
+
+insert into public.gifts (name, description, image_url, purchase_url, price, created_at)
+select $$Passadeira a Vapor Portátil Mondial Fast Steam 1500W$$, $$Passadeira portátil a vapor, ideal para manter as roupas sempre alinhadas.$$, $$/gifts/33-passadeira-mondial.svg$$, $$https://www.amazon.com.br/Passadeira-Vapor-Port%C3%A1til-Mondial-Branco/dp/B0C59MB8V7/ref=asc_df_B0C59NLPC2?mcid=df3c5930732637b5ac7229d774f8a006&tag=googleshopp06-20&linkCode=df0&hvadid=709964705711&hvpos=&hvnetw=g&hvrand=501251467939053534&hvpone=&hvptwo=&hvqmt=&hvdev=m&hvdvcmdl=&hvlocint=&hvlocphy=9101622&hvtargid=pla-2199251424186&hvocijid=501251467939053534-B0C59NLPC2-&hvexpln=0&language=pt_BR&th=1$$, null, coalesce((select max(created_at) from public.gifts), now()) + interval '33 seconds'
+where not exists (select 1 from public.gifts where purchase_url = $$https://www.amazon.com.br/Passadeira-Vapor-Port%C3%A1til-Mondial-Branco/dp/B0C59MB8V7/ref=asc_df_B0C59NLPC2?mcid=df3c5930732637b5ac7229d774f8a006&tag=googleshopp06-20&linkCode=df0&hvadid=709964705711&hvpos=&hvnetw=g&hvrand=501251467939053534&hvpone=&hvptwo=&hvqmt=&hvdev=m&hvdvcmdl=&hvlocint=&hvlocphy=9101622&hvtargid=pla-2199251424186&hvocijid=501251467939053534-B0C59NLPC2-&hvexpln=0&language=pt_BR&th=1$$ or lower(name) = lower($$Passadeira a Vapor Portátil Mondial Fast Steam 1500W$$));
+
+insert into public.gifts (name, description, image_url, purchase_url, price, created_at)
+select $$Conjunto de Utensílios Silicone e Madeira 12 Peças$$, $$Utensílios de cozinha com silicone, madeira, design ergonômico e resistência ao calor.$$, $$/gifts/34-utensilios-silicone-madeira.svg$$, $$https://a.co/d/05sx6WJj$$, null, coalesce((select max(created_at) from public.gifts), now()) + interval '34 seconds'
+where not exists (select 1 from public.gifts where purchase_url = $$https://a.co/d/05sx6WJj$$ or lower(name) = lower($$Conjunto de Utensílios Silicone e Madeira 12 Peças$$));
+
+insert into public.gifts (name, description, image_url, purchase_url, price, created_at)
+select $$Jogo de Panelas Brinox Ceramic Life Sirius 6 Peças Vanilla$$, $$Conjunto de panelas Brinox com acabamento vanilla e revestimento cerâmico.$$, $$/gifts/35-panelas-brinox-sirius.svg$$, $$https://a.co/d/02DvEdTA$$, null, coalesce((select max(created_at) from public.gifts), now()) + interval '35 seconds'
+where not exists (select 1 from public.gifts where purchase_url = $$https://a.co/d/02DvEdTA$$ or lower(name) = lower($$Jogo de Panelas Brinox Ceramic Life Sirius 6 Peças Vanilla$$));
+
+insert into public.gifts (name, description, image_url, purchase_url, price, created_at)
+select $$Aspirador de Pó Vertical Electrolux STK12 1100W 2 em 1$$, $$Aspirador vertical 2 em 1 para limpeza prática e rápida do novo lar.$$, $$/gifts/36-aspirador-electrolux.svg$$, $$https://www.magazineluiza.com.br/aspirador-de-po-vertical-1100w-stk12-electrolux-2-em-1/p/021499100/ep/apdv/?seller_id=magazineluiza$$, null, coalesce((select max(created_at) from public.gifts), now()) + interval '36 seconds'
+where not exists (select 1 from public.gifts where purchase_url = $$https://www.magazineluiza.com.br/aspirador-de-po-vertical-1100w-stk12-electrolux-2-em-1/p/021499100/ep/apdv/?seller_id=magazineluiza$$ or lower(name) = lower($$Aspirador de Pó Vertical Electrolux STK12 1100W 2 em 1$$));
+
+insert into public.gifts (name, description, image_url, purchase_url, price, created_at)
+select $$Jogo de Copos Nadir Lights 300ml 6 Peças$$, $$Copos de vidro cristalino transparente para servir com elegância no dia a dia.$$, $$/gifts/37-copos-nadir-lights.svg$$, $$https://www.americanas.com.br/conjunto-de-copos-lights-6-pecas-nadir-27995564/p?idsku=6805161&sellerId=1&utm_source=YSMESP&utm_medium=buscappc&utm_campaign=alwayson-25&utm_content=bp_pl_px_go_fisico_aloc_pmax_aberto_alwayson-25_na_aon25-00482&utm_term=pla_pmax&gad_source=1&gad_campaignid=23355046229&gbraid=0AAAAAD37Vpo4RUOhvProBkszwCCOkIn5D$$, null, coalesce((select max(created_at) from public.gifts), now()) + interval '37 seconds'
+where not exists (select 1 from public.gifts where purchase_url = $$https://www.americanas.com.br/conjunto-de-copos-lights-6-pecas-nadir-27995564/p?idsku=6805161&sellerId=1&utm_source=YSMESP&utm_medium=buscappc&utm_campaign=alwayson-25&utm_content=bp_pl_px_go_fisico_aloc_pmax_aberto_alwayson-25_na_aon25-00482&utm_term=pla_pmax&gad_source=1&gad_campaignid=23355046229&gbraid=0AAAAAD37Vpo4RUOhvProBkszwCCOkIn5D$$ or lower(name) = lower($$Jogo de Copos Nadir Lights 300ml 6 Peças$$));
+
+insert into public.gifts (name, description, image_url, purchase_url, price, created_at)
+select $$Varal de 40 Clips Inox Retrátil para Roupas Íntimas$$, $$Cabide prático com prendedores para peças pequenas, roupas íntimas e organização.$$, $$/gifts/38-varal-clips-inox.svg$$, $$https://www.amazon.com.br/Prendedores-Pratico-Retr%C3%A1til-Intimas-Pequenas/dp/B0DRXG2RTV/ref=asc_df_B0DRXG2RTV?mcid=757fdec055d93b99a8112e7f285fff8c&tag=googleshopp06-20&linkCode=df0&hvadid=709857323175&hvpos=&hvnetw=g&hvrand=8523565390202454174&hvpone=&hvptwo=&hvqmt=&hvdev=m&hvdvcmdl=&hvlocint=&hvlocphy=9222465&hvtargid=pla-2456906691317&psc=1&hvocijid=8523565390202454174-B0DRXG2RTV-&hvexpln=0&language=pt_BR&shem=rimspwouoe$$, null, coalesce((select max(created_at) from public.gifts), now()) + interval '38 seconds'
+where not exists (select 1 from public.gifts where purchase_url = $$https://www.amazon.com.br/Prendedores-Pratico-Retr%C3%A1til-Intimas-Pequenas/dp/B0DRXG2RTV/ref=asc_df_B0DRXG2RTV?mcid=757fdec055d93b99a8112e7f285fff8c&tag=googleshopp06-20&linkCode=df0&hvadid=709857323175&hvpos=&hvnetw=g&hvrand=8523565390202454174&hvpone=&hvptwo=&hvqmt=&hvdev=m&hvdvcmdl=&hvlocint=&hvlocphy=9222465&hvtargid=pla-2456906691317&psc=1&hvocijid=8523565390202454174-B0DRXG2RTV-&hvexpln=0&language=pt_BR&shem=rimspwouoe$$ or lower(name) = lower($$Varal de 40 Clips Inox Retrátil para Roupas Íntimas$$));
+
+insert into public.gifts (name, description, image_url, purchase_url, price, created_at)
+select $$Kit 4 Capas de Almofada Boho Chic$$, $$Capas de almofada com duas lisas e duas com detalhes elegantes para decorar a sala.$$, $$/gifts/39-capas-almofada-boho.svg$$, $$https://shopee.com.br/product/824236063/23992692048?d_id=da0d5&uls_trackid=55uh5rf700k8&utm_content=33v3JPYL1bHe1wjv7wsKRftkxhtj$$, null, coalesce((select max(created_at) from public.gifts), now()) + interval '39 seconds'
+where not exists (select 1 from public.gifts where purchase_url = $$https://shopee.com.br/product/824236063/23992692048?d_id=da0d5&uls_trackid=55uh5rf700k8&utm_content=33v3JPYL1bHe1wjv7wsKRftkxhtj$$ or lower(name) = lower($$Kit 4 Capas de Almofada Boho Chic$$));
+
+insert into public.gifts (name, description, image_url, purchase_url, price, created_at)
+select $$Porta Ovos Dispenser 4 Andares para 30 Ovos$$, $$Organizador branco rolante em plástico para geladeira, com capacidade para 30 ovos.$$, $$/gifts/40-porta-ovos-dispenser.svg$$, $$https://shopee.com.br/product/323288678/52809373757?d_id=da0d5&uls_trackid=55uh5tl301dj&utm_content=33v3JPYL1b9JvVN2bgY2sQ8RQaKH$$, null, coalesce((select max(created_at) from public.gifts), now()) + interval '40 seconds'
+where not exists (select 1 from public.gifts where purchase_url = $$https://shopee.com.br/product/323288678/52809373757?d_id=da0d5&uls_trackid=55uh5tl301dj&utm_content=33v3JPYL1b9JvVN2bgY2sQ8RQaKH$$ or lower(name) = lower($$Porta Ovos Dispenser 4 Andares para 30 Ovos$$));
+
+commit;
