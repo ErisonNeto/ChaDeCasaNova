@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, Home, RefreshCcw, RotateCcw, Sparkles } from 'lucide-react';
+import { ArrowLeft, Home, RefreshCcw, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PageShell } from '../../components/PageShell';
@@ -18,11 +18,15 @@ export function GiftListPage() {
   const [selectedGift, setSelectedGift] = useState<Gift | null>(null);
   const [currentSession, setCurrentSession] = useState<GuestSession | null>(() => getGuestSession());
   const [claiming, setClaiming] = useState(false);
-  const [canceling, setCanceling] = useState(false);
+  const [cancelingGiftId, setCancelingGiftId] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const myGiftId = currentSession?.selectedGiftId ?? null;
-  const myGift = useMemo(() => gifts.find((gift) => gift.id === myGiftId) ?? null, [gifts, myGiftId]);
+  const myGiftIds = useMemo(() => {
+    if (!currentSession?.guestId) return [];
+    return gifts.filter((gift) => gift.reserved_by_guest_id === currentSession.guestId).map((gift) => gift.id);
+  }, [gifts, currentSession?.guestId]);
+
+  const myGifts = useMemo(() => gifts.filter((gift) => myGiftIds.includes(gift.id)), [gifts, myGiftIds]);
   const availableCount = useMemo(() => gifts.filter((gift) => gift.status === 'available').length, [gifts]);
 
   useEffect(() => {
@@ -58,15 +62,18 @@ export function GiftListPage() {
     if (error) toast.error('Não foi possível carregar os presentes.');
     setGifts(nextGifts);
 
-    if (sessionToValidate?.selectedGiftId) {
-      const selected = nextGifts.find((gift) => gift.id === sessionToValidate.selectedGiftId);
-      const stillMine = selected?.status === 'reserved' && selected.reserved_by_guest_id === sessionToValidate.guestId;
-
-      if (!stillMine) {
-        const updatedSession = { ...sessionToValidate, selectedGiftId: null, selectedAt: null };
-        saveGuestSession(updatedSession);
-        setCurrentSession(updatedSession);
-      }
+    if (sessionToValidate) {
+      const selectedGiftIds = nextGifts
+        .filter((gift) => gift.reserved_by_guest_id === sessionToValidate.guestId)
+        .map((gift) => gift.id);
+      const updatedSession = {
+        ...sessionToValidate,
+        selectedGiftIds,
+        selectedGiftId: selectedGiftIds[0] ?? null,
+        selectedAt: nextGifts.find((gift) => gift.id === selectedGiftIds[0])?.reserved_at ?? null,
+      };
+      saveGuestSession(updatedSession);
+      setCurrentSession(updatedSession);
     }
 
     if (showLoading) setLoading(false);
@@ -95,25 +102,29 @@ export function GiftListPage() {
       return;
     }
 
-    const updatedSession = { ...currentSession, selectedGiftId: selectedGift.id, selectedAt: new Date().toISOString() };
+    const updatedSession = {
+      ...currentSession,
+      selectedGiftId: selectedGift.id,
+      selectedAt: new Date().toISOString(),
+      selectedGiftIds: Array.from(new Set([...(currentSession.selectedGiftIds ?? []), selectedGift.id])),
+    };
     saveGuestSession(updatedSession);
     setCurrentSession(updatedSession);
     setSelectedGift(null);
-    toast.success('Presente reservado com carinho!');
+    toast.success('Presente reservado com carinho! Você pode escolher mais itens, se quiser.');
     await loadGifts(false, updatedSession);
   }
 
-  async function cancelMyChoice(gift?: Gift) {
-    if (!currentSession?.selectedGiftId) return;
-    const giftName = gift?.name ?? myGift?.name ?? 'seu presente';
-    if (!confirm(`Deseja cancelar a escolha de "${giftName}" e liberar este presente novamente?`)) return;
+  async function cancelMyChoice(gift: Gift) {
+    if (!currentSession?.guestId) return;
+    if (!confirm(`Deseja cancelar a escolha de "${gift.name}" e liberar este presente novamente?`)) return;
 
-    setCanceling(true);
+    setCancelingGiftId(gift.id);
     const { data, error } = await supabase.rpc('cancel_guest_choice', {
       p_guest_id: currentSession.guestId,
-      p_gift_id: currentSession.selectedGiftId,
+      p_gift_id: gift.id,
     });
-    setCanceling(false);
+    setCancelingGiftId(null);
 
     if (error || !data?.success) {
       toast.error(data?.message ?? 'Não foi possível cancelar sua escolha agora.');
@@ -121,10 +132,16 @@ export function GiftListPage() {
       return;
     }
 
-    const updatedSession = { ...currentSession, selectedGiftId: null, selectedAt: null };
+    const updatedGiftIds = (currentSession.selectedGiftIds ?? []).filter((id) => id !== gift.id);
+    const updatedSession = {
+      ...currentSession,
+      selectedGiftIds: updatedGiftIds,
+      selectedGiftId: updatedGiftIds[0] ?? null,
+      selectedAt: updatedGiftIds.length ? currentSession.selectedAt : null,
+    };
     saveGuestSession(updatedSession);
     setCurrentSession(updatedSession);
-    toast.success('Escolha cancelada. Você pode escolher outro presente.');
+    toast.success('Escolha cancelada. O presente voltou a ficar disponível.');
     await loadGifts(false, updatedSession);
   }
 
@@ -140,16 +157,14 @@ export function GiftListPage() {
           </Link>
           <p className="premium-label">Olá, {currentSession?.fullName}</p>
           <h1 className="mt-2 break-words font-display text-[2.35rem] leading-tight text-cocoa sm:text-5xl">
-            {myGiftId ? 'Sua escolha está reservada' : 'Escolha um presente especial'}
+            Escolha um ou mais presentes
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-cocoa/62">
-            {myGiftId
-              ? 'Você ainda pode navegar pela lista completa. Para trocar, cancele sua escolha atual e selecione outro presente disponível.'
-              : 'Cada presente só pode ser escolhido uma vez. Ao confirmar, ele ficará reservado exclusivamente para você.'}
+            Cada presente só pode ser escolhido uma vez, mas você pode reservar quantos presentes quiser para participar ainda mais desse momento especial.
           </p>
-          {myGiftId && myGift && (
+          {myGifts.length > 0 && (
             <div className="mt-4 rounded-[1.25rem] border border-gold/20 bg-gold/10 px-4 py-3 text-sm leading-6 text-cocoa/70">
-              Seu presente atual: <strong>{myGift.name}</strong>.
+              Você já escolheu <strong>{myGifts.length}</strong> {myGifts.length === 1 ? 'presente' : 'presentes'}: {myGifts.map((gift) => gift.name).join(', ')}.
             </div>
           )}
         </div>
@@ -158,16 +173,14 @@ export function GiftListPage() {
             <p className="font-display text-3xl leading-none text-cocoa">{availableCount}</p>
             <p className="mt-1 text-[0.65rem] font-bold uppercase tracking-[.16em] text-cocoa/45 sm:text-xs sm:tracking-[.18em]">disponíveis</p>
           </div>
-          <Button variant="secondary" onClick={() => loadGifts()} className="w-full sm:w-auto">
+          <div className="rounded-2xl bg-porcelain px-4 py-3 text-center shadow-soft">
+            <p className="font-display text-3xl leading-none text-cocoa">{myGifts.length}</p>
+            <p className="mt-1 text-[0.65rem] font-bold uppercase tracking-[.16em] text-cocoa/45 sm:text-xs sm:tracking-[.18em]">seus presentes</p>
+          </div>
+          <Button variant="secondary" onClick={() => loadGifts()} className="col-span-2 w-full sm:col-span-1 sm:w-auto">
             <RefreshCcw className="h-4 w-4 shrink-0" />
             Atualizar
           </Button>
-          {myGiftId && (
-            <Button variant="secondary" onClick={() => cancelMyChoice()} loading={canceling} className="col-span-2 w-full sm:w-auto">
-              <RotateCcw className="h-4 w-4 shrink-0" />
-              Cancelar escolha
-            </Button>
-          )}
         </div>
       </header>
 
@@ -186,8 +199,8 @@ export function GiftListPage() {
               <GiftCard
                 key={gift.id}
                 gift={gift}
-                isMine={myGiftId === gift.id}
-                disabled={Boolean(myGiftId)}
+                isMine={myGiftIds.includes(gift.id)}
+                disabled={cancelingGiftId === gift.id}
                 onChoose={setSelectedGift}
                 onCancelChoice={cancelMyChoice}
               />

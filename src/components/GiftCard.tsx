@@ -58,7 +58,7 @@ export function GiftCard({ gift, isMine, disabled, onChoose, onCancelChoice }: P
               className="w-full"
             >
               <GiftIcon className="h-4 w-4 shrink-0" />
-              {isMine ? 'Escolhido por você' : unavailable ? 'Indisponível' : disabled ? 'Cancele sua escolha para trocar' : 'Escolher presente'}
+              {isMine ? 'Escolhido por você' : unavailable ? 'Indisponível' : disabled ? 'Aguarde...' : 'Escolher presente'}
             </Button>
           )}
           {gift.purchase_url && (

@@ -45,12 +45,23 @@ export function GuestsAdminPage() {
     setGifts((giftsResult.data ?? []) as Gift[]);
   }
 
-  const giftById = useMemo(() => new Map(gifts.map((gift) => [gift.id, gift])), [gifts]);
+  const giftsByGuestId = useMemo(() => {
+    const map = new Map<string, Gift[]>();
+    gifts.forEach((gift) => {
+      if (!gift.reserved_by_guest_id) return;
+      const list = map.get(gift.reserved_by_guest_id) ?? [];
+      list.push(gift);
+      map.set(gift.reserved_by_guest_id, list);
+    });
+    return map;
+  }, [gifts]);
+
   const filteredGuests = guests.filter((guest) => {
+    const selectedCount = giftsByGuestId.get(guest.id)?.length ?? 0;
     if (filter === 'accessed') return guest.has_accessed;
     if (filter === 'not_accessed') return !guest.has_accessed;
-    if (filter === 'selected') return Boolean(guest.selected_gift_id);
-    if (filter === 'not_selected') return !guest.selected_gift_id;
+    if (filter === 'selected') return selectedCount > 0;
+    if (filter === 'not_selected') return selectedCount === 0;
     return true;
   });
 
@@ -90,8 +101,9 @@ export function GuestsAdminPage() {
   }
 
   async function deleteGuest(guest: Guest) {
-    if (guest.selected_gift_id) {
-      toast.error('Cancele a escolha antes de excluir este convidado.');
+    const selectedGifts = giftsByGuestId.get(guest.id) ?? [];
+    if (selectedGifts.length > 0) {
+      toast.error('Libere os presentes escolhidos antes de excluir este convidado.');
       return;
     }
     if (!confirm(`Excluir o convidado "${guest.full_name}"?`)) return;
@@ -103,13 +115,16 @@ export function GuestsAdminPage() {
     }
   }
 
-  async function releaseGuestChoice(guest: Guest) {
-    if (!guest.selected_gift_id) return;
-    if (!confirm(`Cancelar a escolha de ${guest.full_name}?`)) return;
-    const { data, error } = await supabase.rpc('release_gift', { p_gift_id: guest.selected_gift_id });
-    if (error || !data?.success) toast.error(data?.message ?? 'Não foi possível cancelar a escolha.');
+  async function releaseGuestChoices(guest: Guest) {
+    const selectedGifts = giftsByGuestId.get(guest.id) ?? [];
+    if (selectedGifts.length === 0) return;
+    if (!confirm(`Cancelar ${selectedGifts.length} ${selectedGifts.length === 1 ? 'escolha' : 'escolhas'} de ${guest.full_name}?`)) return;
+
+    const results = await Promise.all(selectedGifts.map((gift) => supabase.rpc('release_gift', { p_gift_id: gift.id })));
+    const failed = results.find((result) => result.error || !result.data?.success);
+    if (failed) toast.error(failed.data?.message ?? 'Não foi possível cancelar uma das escolhas.');
     else {
-      toast.success('Escolha cancelada e presente liberado.');
+      toast.success('Escolhas canceladas e presentes liberados.');
       loadData();
     }
   }
@@ -168,34 +183,41 @@ export function GuestsAdminPage() {
         </div>
 
         <div className="grid gap-3 md:hidden">
-          {filteredGuests.map((guest) => (
-            <article key={guest.id} className="rounded-[1.5rem] border border-cocoa/8 bg-porcelain p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="break-words font-display text-2xl leading-tight text-cocoa">{guest.full_name}</p>
-                  <p className="mt-1 text-xs text-cocoa/45">{guest.phone || 'Sem telefone'}</p>
+          {filteredGuests.map((guest) => {
+            const selectedGifts = giftsByGuestId.get(guest.id) ?? [];
+            return (
+              <article key={guest.id} className="rounded-[1.5rem] border border-cocoa/8 bg-porcelain p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="break-words font-display text-2xl leading-tight text-cocoa">{guest.full_name}</p>
+                    <p className="mt-1 text-xs text-cocoa/45">{guest.phone || 'Sem telefone'}</p>
+                  </div>
+                  <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${guest.has_accessed ? 'bg-sage/15 text-olive' : 'bg-cocoa/10 text-cocoa/50'}`}>{guest.has_accessed ? 'Acessou' : 'Não acessou'}</span>
                 </div>
-                <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${guest.has_accessed ? 'bg-sage/15 text-olive' : 'bg-cocoa/10 text-cocoa/50'}`}>{guest.has_accessed ? 'Acessou' : 'Não acessou'}</span>
-              </div>
 
-              <div className="mt-4 grid gap-3 rounded-[1.2rem] bg-white/60 p-3">
-                <div>
-                  <p className="mobile-card-label">Presente</p>
-                  <p className="mobile-card-value">{guest.selected_gift_id ? giftById.get(guest.selected_gift_id)?.name ?? 'Presente removido' : '-'}</p>
+                <div className="mt-4 grid gap-3 rounded-[1.2rem] bg-white/60 p-3">
+                  <div>
+                    <p className="mobile-card-label">Presentes</p>
+                    <p className="mobile-card-value">{selectedGifts.length ? selectedGifts.map((gift) => gift.name).join(', ') : '-'}</p>
+                  </div>
+                  <div>
+                    <p className="mobile-card-label">Quantidade</p>
+                    <p className="mobile-card-value">{selectedGifts.length}</p>
+                  </div>
+                  <div>
+                    <p className="mobile-card-label">Última escolha</p>
+                    <p className="mobile-card-value">{formatDateTime(selectedGifts[0]?.reserved_at ?? null)}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="mobile-card-label">Escolha</p>
-                  <p className="mobile-card-value">{formatDateTime(guest.selected_at)}</p>
-                </div>
-              </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <Button variant="secondary" onClick={() => editGuest(guest)} className="w-full" aria-label="Editar convidado"><Edit3 className="h-4 w-4" /> Editar</Button>
-                {guest.selected_gift_id && <Button variant="secondary" onClick={() => releaseGuestChoice(guest)} className="w-full" aria-label="Cancelar escolha"><RotateCcw className="h-4 w-4" /> Liberar</Button>}
-                <Button variant="danger" onClick={() => deleteGuest(guest)} className="w-full col-span-2" aria-label="Excluir convidado"><Trash2 className="h-4 w-4" /> Excluir</Button>
-              </div>
-            </article>
-          ))}
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <Button variant="secondary" onClick={() => editGuest(guest)} className="w-full" aria-label="Editar convidado"><Edit3 className="h-4 w-4" /> Editar</Button>
+                  {selectedGifts.length > 0 && <Button variant="secondary" onClick={() => releaseGuestChoices(guest)} className="w-full" aria-label="Cancelar escolhas"><RotateCcw className="h-4 w-4" /> Liberar</Button>}
+                  <Button variant="danger" onClick={() => deleteGuest(guest)} className="w-full col-span-2" aria-label="Excluir convidado"><Trash2 className="h-4 w-4" /> Excluir</Button>
+                </div>
+              </article>
+            );
+          })}
           {filteredGuests.length === 0 && <p className="py-10 text-center text-cocoa/50">Nenhum convidado neste filtro.</p>}
         </div>
 
@@ -205,35 +227,40 @@ export function GuestsAdminPage() {
               <tr className="border-b border-cocoa/10 text-xs uppercase tracking-[.18em] text-cocoa/45">
                 <th className="py-3 pr-4">Nome</th>
                 <th className="py-3 pr-4">Acessou</th>
-                <th className="py-3 pr-4">Presente</th>
-                <th className="py-3 pr-4">Escolha</th>
+                <th className="py-3 pr-4">Presentes</th>
+                <th className="py-3 pr-4">Qtd.</th>
+                <th className="py-3 pr-4">Última escolha</th>
                 <th className="py-3 text-right">Ações</th>
               </tr>
             </thead>
             <tbody>
-              {filteredGuests.map((guest) => (
-                <tr key={guest.id} className="border-b border-cocoa/5 last:border-0">
-                  <td className="py-4 pr-4">
-                    <p className="font-bold">{guest.full_name}</p>
-                    <p className="text-xs text-cocoa/45">{guest.phone || 'Sem telefone'}</p>
-                  </td>
-                  <td className="py-4 pr-4">
-                    <span className={`rounded-full px-3 py-1 text-xs font-bold ${guest.has_accessed ? 'bg-sage/15 text-olive' : 'bg-cocoa/10 text-cocoa/50'}`}>{guest.has_accessed ? 'Sim' : 'Não'}</span>
-                  </td>
-                  <td className="py-4 pr-4 text-cocoa/65">{guest.selected_gift_id ? giftById.get(guest.selected_gift_id)?.name ?? 'Presente removido' : '-'}</td>
-                  <td className="py-4 pr-4 text-cocoa/55">{formatDateTime(guest.selected_at)}</td>
-                  <td className="py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="secondary" onClick={() => editGuest(guest)} aria-label="Editar convidado"><Edit3 className="h-4 w-4" /></Button>
-                      {guest.selected_gift_id && <Button variant="secondary" onClick={() => releaseGuestChoice(guest)} aria-label="Cancelar escolha"><RotateCcw className="h-4 w-4" /></Button>}
-                      <Button variant="danger" onClick={() => deleteGuest(guest)} aria-label="Excluir convidado"><Trash2 className="h-4 w-4" /></Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {filteredGuests.map((guest) => {
+                const selectedGifts = giftsByGuestId.get(guest.id) ?? [];
+                return (
+                  <tr key={guest.id} className="border-b border-cocoa/5 last:border-0">
+                    <td className="py-4 pr-4">
+                      <p className="font-bold">{guest.full_name}</p>
+                      <p className="text-xs text-cocoa/45">{guest.phone || 'Sem telefone'}</p>
+                    </td>
+                    <td className="py-4 pr-4">
+                      <span className={`rounded-full px-3 py-1 text-xs font-bold ${guest.has_accessed ? 'bg-sage/15 text-olive' : 'bg-cocoa/10 text-cocoa/50'}`}>{guest.has_accessed ? 'Sim' : 'Não'}</span>
+                    </td>
+                    <td className="py-4 pr-4 text-cocoa/65">{selectedGifts.length ? selectedGifts.map((gift) => gift.name).join(', ') : '-'}</td>
+                    <td className="py-4 pr-4 text-cocoa/65">{selectedGifts.length}</td>
+                    <td className="py-4 pr-4 text-cocoa/55">{formatDateTime(selectedGifts[0]?.reserved_at ?? null)}</td>
+                    <td className="py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="secondary" onClick={() => editGuest(guest)} aria-label="Editar convidado"><Edit3 className="h-4 w-4" /></Button>
+                        {selectedGifts.length > 0 && <Button variant="secondary" onClick={() => releaseGuestChoices(guest)} aria-label="Cancelar escolhas"><RotateCcw className="h-4 w-4" /></Button>}
+                        <Button variant="danger" onClick={() => deleteGuest(guest)} aria-label="Excluir convidado"><Trash2 className="h-4 w-4" /></Button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
               {filteredGuests.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-10 text-center text-cocoa/50">Nenhum convidado neste filtro.</td>
+                  <td colSpan={6} className="py-10 text-center text-cocoa/50">Nenhum convidado neste filtro.</td>
                 </tr>
               )}
             </tbody>

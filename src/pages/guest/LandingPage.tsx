@@ -62,7 +62,8 @@ export function LandingPage() {
     });
 
     toast.success(`Bem-vindo(a), ${guest.full_name.split(' ')[0]}!`);
-    navigate(guest.selected_gift_id ? '/confirmacao' : '/lista');
+    // Agora cada convidado pode escolher vários presentes, então sempre abrimos a lista completa.
+    navigate('/lista');
   }
 
   return (

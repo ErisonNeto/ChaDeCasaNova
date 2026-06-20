@@ -35,14 +35,14 @@ export function DashboardPage() {
     setGifts((giftsResult.data ?? []) as GiftType[]);
   }
 
-  const giftById = useMemo(() => new Map(gifts.map((gift) => [gift.id, gift])), [gifts]);
+  const guestById = useMemo(() => new Map(guests.map((guest) => [guest.id, guest])), [guests]);
   const accessed = guests.filter((guest) => guest.has_accessed).length;
-  const selected = guests.filter((guest) => guest.selected_gift_id).length;
+  const reservedGifts = gifts.filter((gift) => gift.status === 'reserved' && gift.reserved_by_guest_id);
+  const selectedGuests = new Set(reservedGifts.map((gift) => gift.reserved_by_guest_id).filter(Boolean)).size;
   const available = gifts.filter((gift) => gift.status === 'available').length;
-  const reserved = gifts.filter((gift) => gift.status === 'reserved').length;
-  const recentSelections = guests
-    .filter((guest) => guest.selected_gift_id)
-    .sort((a, b) => new Date(b.selected_at ?? 0).getTime() - new Date(a.selected_at ?? 0).getTime())
+  const reserved = reservedGifts.length;
+  const recentSelections = reservedGifts
+    .sort((a, b) => new Date(b.reserved_at ?? 0).getTime() - new Date(a.reserved_at ?? 0).getTime())
     .slice(0, 8);
 
   return (
@@ -62,9 +62,9 @@ export function DashboardPage() {
       <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-5">
         <StatCard label="Convidados" value={guests.length} icon={Users} />
         <StatCard label="Acessaram" value={accessed} icon={UserCheck} />
-        <StatCard label="Escolheram" value={selected} icon={PackageCheck} />
+        <StatCard label="Convidados com presente" value={selectedGuests} icon={PackageCheck} />
         <StatCard label="Disponíveis" value={available} icon={PackageOpen} />
-        <StatCard label="Reservados" value={reserved} icon={Gift} />
+        <StatCard label="Presentes reservados" value={reserved} icon={Gift} />
       </div>
 
       <section className="mt-6 rounded-[1.75rem] border border-white bg-white/80 p-4 shadow-soft sm:mt-8 sm:rounded-[2rem] sm:p-7">
@@ -79,13 +79,16 @@ export function DashboardPage() {
           {recentSelections.length === 0 ? (
             <p className="py-6 text-center text-sm text-cocoa/50">Nenhuma escolha confirmada ainda.</p>
           ) : (
-            recentSelections.map((guest) => (
-              <article key={guest.id} className="rounded-[1.4rem] border border-cocoa/8 bg-porcelain p-4">
-                <p className="font-bold text-cocoa">{guest.full_name}</p>
-                <p className="mt-2 text-sm leading-6 text-cocoa/65">{giftById.get(guest.selected_gift_id ?? '')?.name ?? 'Presente removido'}</p>
-                <p className="mt-2 text-xs text-cocoa/45">{formatDateTime(guest.selected_at)}</p>
-              </article>
-            ))
+            recentSelections.map((gift) => {
+              const guest = gift.reserved_by_guest_id ? guestById.get(gift.reserved_by_guest_id) : null;
+              return (
+                <article key={gift.id} className="rounded-[1.4rem] border border-cocoa/8 bg-porcelain p-4">
+                  <p className="font-bold text-cocoa">{guest?.full_name ?? 'Convidado removido'}</p>
+                  <p className="mt-2 text-sm leading-6 text-cocoa/65">{gift.name}</p>
+                  <p className="mt-2 text-xs text-cocoa/45">{formatDateTime(gift.reserved_at)}</p>
+                </article>
+              );
+            })
           )}
         </div>
 
@@ -104,13 +107,16 @@ export function DashboardPage() {
                   <td colSpan={3} className="py-8 text-center text-cocoa/50">Nenhuma escolha confirmada ainda.</td>
                 </tr>
               ) : (
-                recentSelections.map((guest) => (
-                  <tr key={guest.id} className="border-b border-cocoa/5 last:border-0">
-                    <td className="py-4 pr-4 font-bold">{guest.full_name}</td>
-                    <td className="py-4 pr-4 text-cocoa/70">{giftById.get(guest.selected_gift_id ?? '')?.name ?? 'Presente removido'}</td>
-                    <td className="py-4 pr-4 text-cocoa/55">{formatDateTime(guest.selected_at)}</td>
-                  </tr>
-                ))
+                recentSelections.map((gift) => {
+                  const guest = gift.reserved_by_guest_id ? guestById.get(gift.reserved_by_guest_id) : null;
+                  return (
+                    <tr key={gift.id} className="border-b border-cocoa/5 last:border-0">
+                      <td className="py-4 pr-4 font-bold">{guest?.full_name ?? 'Convidado removido'}</td>
+                      <td className="py-4 pr-4 text-cocoa/70">{gift.name}</td>
+                      <td className="py-4 pr-4 text-cocoa/55">{formatDateTime(gift.reserved_at)}</td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

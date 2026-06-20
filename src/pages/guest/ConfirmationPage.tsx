@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Check, ExternalLink, Heart, Home, ListChecks, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Check, Heart, Home, ListChecks, RotateCcw } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PageShell } from '../../components/PageShell';
@@ -12,9 +12,9 @@ import { getGuestSession, clearGuestSession, saveGuestSession } from '../../lib/
 import type { Gift, GuestSession } from '../../types/database';
 
 export function ConfirmationPage() {
-  const [gift, setGift] = useState<Gift | null>(null);
+  const [gifts, setGifts] = useState<Gift[]>([]);
   const [loading, setLoading] = useState(true);
-  const [canceling, setCanceling] = useState(false);
+  const [cancelingGiftId, setCancelingGiftId] = useState<string | null>(null);
   const [currentSession, setCurrentSession] = useState<GuestSession | null>(() => getGuestSession());
   const navigate = useNavigate();
 
@@ -25,61 +25,61 @@ export function ConfirmationPage() {
       return;
     }
     setCurrentSession(session);
-    if (!session.selectedGiftId) {
-      navigate('/lista');
-      return;
-    }
-    loadGift(session.selectedGiftId, session);
+    loadMyGifts(session);
   }, []);
 
-  async function loadGift(giftId: string, sessionToValidate = currentSession) {
+  async function loadMyGifts(sessionToValidate = currentSession) {
+    if (!sessionToValidate) return;
     setLoading(true);
-    const { data } = await supabase.from('gifts').select('*').eq('id', giftId).maybeSingle();
-    const loadedGift = data as Gift | null;
+    const { data, error } = await supabase
+      .from('gifts')
+      .select('*')
+      .eq('reserved_by_guest_id', sessionToValidate.guestId)
+      .order('reserved_at', { ascending: false });
+    setLoading(false);
 
-    if (!loadedGift || loadedGift.reserved_by_guest_id !== sessionToValidate?.guestId) {
-      if (sessionToValidate) {
-        const updatedSession = { ...sessionToValidate, selectedGiftId: null, selectedAt: null };
-        saveGuestSession(updatedSession);
-        setCurrentSession(updatedSession);
-      }
-      toast.info('Sua escolha foi liberada. Você pode escolher outro presente.');
-      navigate('/lista');
+    if (error) {
+      toast.error('Não foi possível carregar seus presentes.');
       return;
     }
 
-    setGift(loadedGift);
-    setLoading(false);
+    const selectedGifts = (data ?? []) as Gift[];
+    setGifts(selectedGifts);
+    const updatedSession = {
+      ...sessionToValidate,
+      selectedGiftIds: selectedGifts.map((gift) => gift.id),
+      selectedGiftId: selectedGifts[0]?.id ?? null,
+      selectedAt: selectedGifts[0]?.reserved_at ?? null,
+    };
+    saveGuestSession(updatedSession);
+    setCurrentSession(updatedSession);
   }
 
-  async function cancelMyChoice() {
-    if (!currentSession?.selectedGiftId) return;
-    if (!confirm(`Deseja cancelar a escolha de "${gift?.name ?? 'seu presente'}" e liberar este presente novamente?`)) return;
+  async function cancelMyChoice(gift: Gift) {
+    if (!currentSession?.guestId) return;
+    if (!confirm(`Deseja cancelar a escolha de "${gift.name}" e liberar este presente novamente?`)) return;
 
-    setCanceling(true);
+    setCancelingGiftId(gift.id);
     const { data, error } = await supabase.rpc('cancel_guest_choice', {
       p_guest_id: currentSession.guestId,
-      p_gift_id: currentSession.selectedGiftId,
+      p_gift_id: gift.id,
     });
-    setCanceling(false);
+    setCancelingGiftId(null);
 
     if (error || !data?.success) {
       toast.error(data?.message ?? 'Não foi possível cancelar sua escolha agora.');
       return;
     }
 
-    const updatedSession = { ...currentSession, selectedGiftId: null, selectedAt: null };
-    saveGuestSession(updatedSession);
-    setCurrentSession(updatedSession);
-    toast.success('Escolha cancelada. Você pode escolher outro presente.');
-    navigate('/lista');
+    toast.success('Escolha cancelada. O presente voltou para a lista.');
+    await loadMyGifts(currentSession);
   }
 
   if (loading) return <LoadingScreen text="Preparando sua confirmação..." />;
 
   return (
     <PageShell>
-      <section className="grid min-h-[calc(100vh-2.5rem)] items-center gap-6 py-6 sm:min-h-[92vh] sm:gap-8 sm:py-10 lg:grid-cols-[.9fr_1.1fr]">
+      <section className="grid min-h-[calc(100vh-2.5rem)] items-start gap-6 py-6 sm:min-h-[92vh] sm:gap-8 sm:py-10 lg:grid-cols-[.85fr_1.15fr]">
         <motion.div
           className="premium-card relative overflow-hidden p-6 text-center sm:p-10 lg:text-left"
           initial={{ opacity: 0, y: 18 }}
@@ -96,32 +96,20 @@ export function ConfirmationPage() {
             >
               <Check className="h-8 w-8 sm:h-10 sm:w-10" />
             </motion.div>
-            <p className="premium-label">Escolha confirmada</p>
+            <p className="premium-label">Presentes reservados</p>
             <h1 className="mt-3 break-words font-display text-[2.75rem] leading-[1.02] text-cocoa sm:text-6xl">
               Obrigado por fazer parte do nosso lar.
             </h1>
             <p className="mt-5 text-base leading-7 text-cocoa/65 sm:text-lg sm:leading-8">
-              {currentSession?.fullName}, seu presente foi reservado com sucesso. Você pode continuar vendo a lista completa ou cancelar sua escolha se precisar trocar.
+              {currentSession?.fullName}, você reservou {gifts.length} {gifts.length === 1 ? 'presente' : 'presentes'}. Você pode continuar vendo a lista, escolher mais itens ou cancelar algum presente.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap lg:justify-start">
-              {gift?.purchase_url && (
-                <a href={gift.purchase_url} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
-                  <Button className="w-full sm:w-auto">
-                    <ExternalLink className="h-4 w-4 shrink-0" />
-                    Ver onde comprar
-                  </Button>
-                </a>
-              )}
               <Link to="/lista" className="w-full sm:w-auto">
-                <Button variant="secondary" className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto">
                   <ListChecks className="h-4 w-4 shrink-0" />
                   Ver lista completa
                 </Button>
               </Link>
-              <Button variant="secondary" onClick={cancelMyChoice} loading={canceling} className="w-full sm:w-auto">
-                <RotateCcw className="h-4 w-4 shrink-0" />
-                Cancelar escolha
-              </Button>
               <Link to="/" onClick={clearGuestSession} className="w-full sm:w-auto">
                 <Button variant="ghost" className="w-full sm:w-auto">
                   <ArrowLeft className="h-4 w-4 shrink-0" />
@@ -133,13 +121,29 @@ export function ConfirmationPage() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.65, delay: 0.1 }}>
-          {gift ? (
-            <GiftCard gift={gift} isMine disabled onCancelChoice={cancelMyChoice} />
+          {gifts.length > 0 ? (
+            <div className="grid gap-5 sm:grid-cols-2">
+              {gifts.map((gift) => (
+                <GiftCard
+                  key={gift.id}
+                  gift={gift}
+                  isMine
+                  disabled={cancelingGiftId === gift.id}
+                  onCancelChoice={cancelMyChoice}
+                />
+              ))}
+            </div>
           ) : (
             <div className="premium-card p-8 text-center sm:p-10">
               <Home className="mx-auto h-12 w-12 text-olive" />
-              <h2 className="mt-5 font-display text-3xl leading-tight">Presente confirmado</h2>
-              <p className="mt-3 text-cocoa/60">O presente reservado não está mais disponível para outros convidados.</p>
+              <h2 className="mt-5 font-display text-3xl leading-tight">Nenhum presente reservado</h2>
+              <p className="mt-3 text-cocoa/60">Volte para a lista e escolha um ou mais presentes.</p>
+              <Link to="/lista" className="mt-6 inline-flex">
+                <Button>
+                  <ListChecks className="h-4 w-4" />
+                  Escolher presentes
+                </Button>
+              </Link>
             </div>
           )}
         </motion.div>

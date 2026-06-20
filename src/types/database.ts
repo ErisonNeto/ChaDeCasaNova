@@ -36,6 +36,9 @@ export type AdminSettings = {
 export type GuestSession = {
   guestId: string;
   fullName: string;
+  /** Legacy: primeiro/último presente escolhido. Mantido só para compatibilidade. */
   selectedGiftId: string | null;
   selectedAt: string | null;
+  /** Novo fluxo: um convidado pode reservar vários presentes. */
+  selectedGiftIds?: string[];
 };
