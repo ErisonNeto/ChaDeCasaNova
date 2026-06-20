@@ -1,8 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Gift as GiftIcon, X } from 'lucide-react';
 import { Button } from './Button';
+import { GiftHero } from './GiftHero';
 import type { Gift } from '../types/database';
-import { getGiftFallbackImageUrl, getGiftImageUrl, handleGiftImageError } from '../lib/giftImages';
 
 type Props = {
   gift: Gift | null;
@@ -29,17 +29,11 @@ export function ConfirmModal({ gift, open, loading, onClose, onConfirm }: Props)
             exit={{ y: 18, scale: 0.98, opacity: 0 }}
             transition={{ duration: 0.25 }}
           >
-            <div className="relative h-44 overflow-hidden sm:h-52">
-              <img
-                src={getGiftImageUrl(gift)}
-                data-fallback={getGiftFallbackImageUrl(gift)}
-                alt={gift.name}
-                onError={handleGiftImageError}
-                className="h-full w-full object-cover"
-              />
+            <div className="relative">
+              <GiftHero gift={gift} compact />
               <button
                 onClick={onClose}
-                className="absolute right-3 top-3 grid h-11 w-11 place-items-center rounded-full bg-white/85 text-cocoa shadow-soft transition hover:bg-white"
+                className="absolute right-3 top-3 z-30 grid h-11 w-11 place-items-center rounded-full bg-white/85 text-cocoa shadow-soft transition hover:bg-white"
                 aria-label="Fechar modal"
               >
                 <X className="h-4 w-4" />

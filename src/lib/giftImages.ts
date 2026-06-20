@@ -3,17 +3,47 @@ import type { Gift } from '../types/database';
 
 export const FALLBACK_GIFT_IMAGE = '/gifts/fallback-gift.svg';
 
+const amazonProductImage = (asin: string) =>
+  `https://m.media-amazon.com/images/P/${asin}.01._AC_SL1500_.jpg`;
+
+const flickrPhoto = (keywords: string, lock: number) =>
+  `https://loremflickr.com/900/700/${keywords}?lock=${lock}`;
+
+// Fotos reais por categoria/título. Esta camada não usa mais a arte da concha como imagem principal.
+// A concha fica apenas como último fallback caso alguma foto externa falhe.
+const REAL_PHOTO_BY_NAME: Array<[RegExp, string]> = [
+  [/air\s*fryer|eaf85/i, amazonProductImage('B0FRH96P1G')],
+  [/cesto\s+de\s+bambu/i, amazonProductImage('B0CLSGC1BV')],
+  [/varal/i, flickrPhoto('clothes,drying,rack', 3003)],
+  [/x[ií]cara|caf[eé]/i, amazonProductImage('B0GNWNXF1W')],
+  [/jogo\s+de\s+jantar|naturalle/i, flickrPhoto('black,dinnerware,ceramic', 3005)],
+  [/sanduicheira|cadence/i, flickrPhoto('sandwich,maker,kitchen', 3006)],
+  [/cama.*preto|camafeu/i, flickrPhoto('black,bed,sheets,bedding', 3007)],
+  [/cama.*rosa|120\s*fios/i, flickrPhoto('pink,bedding,bed,sheets', 3008)],
+  [/assadeiras|starflon/i, amazonProductImage('B0CFYRRWVL')],
+  [/cabides|cabide/i, flickrPhoto('wooden,hangers,closet', 3010)],
+  [/banho|d[öo]hler|romance/i, amazonProductImage('B0BVXLVGRN')],
+  [/karsten|super\s+banho/i, flickrPhoto('white,bath,towel', 3012)],
+  [/banheiro\s+completo|lixeira.*bambu/i, flickrPhoto('bathroom,accessories,bamboo', 3013)],
+  [/potes\s+herm[eé]ticos|mantimentos/i, flickrPhoto('kitchen,storage,jars,bamboo', 3014)],
+  [/almofadas/i, amazonProductImage('B0G6GF9741')],
+  [/mantas/i, amazonProductImage('B0DPT3V2K6')],
+  [/vasos.*trio|trio.*vasos|vazado/i, amazonProductImage('B0GKPQ7315')],
+  [/vaso\s+cone/i, amazonProductImage('B0F99HM6L4')],
+  [/umidificador|aromatizador|difusor/i, amazonProductImage('B08SXS57Q7')],
+  [/t[aá]bua|m[aá]rmore/i, flickrPhoto('marble,cutting,board,kitchen', 3020)],
+  [/processador.*electrolux|efp500/i, flickrPhoto('food,processor,kitchen,appliance', 3021)],
+  [/porta\s+temperos|condimentos/i, amazonProductImage('B0GPR1VZN6')],
+  [/facas|plenus/i, amazonProductImage('B076MKTNRK')],
+  [/ta[cç]as|vinho\s+branco/i, amazonProductImage('B0B5LL9MXB')],
+  [/frigideira|brinox|sirius/i, flickrPhoto('ceramic,frying,pan,kitchen', 3025)],
+  [/panelas|oster|marble/i, amazonProductImage('B0CRY48NSK')],
+  [/organizador\s+de\s+pia|escorredor/i, amazonProductImage('B0CQT38866')],
+  [/faqueiro|malibu/i, flickrPhoto('flatware,cutlery,set', 3028)],
+  [/lixeira\s+pl[aá]stica|paramount/i, amazonProductImage('B0GKGXZ5YB')],
+];
+
 const LOCAL_PLACEHOLDER_BY_NAME: Array<[RegExp, string]> = [
-  [/albany|borda\s+dourada|copos.*400ml/i, '/gifts/30-copos-albany.svg'],
-  [/garrafas.*acr[ií]lico|caixa\s+de\s+leite|1000ml/i, '/gifts/31-garrafas-acrilico.svg'],
-  [/porta[-\s]?ovos|30\s+ovos|ovos.*rolante/i, '/gifts/32-porta-ovos.svg'],
-  [/capas?\s+de\s+almofada|boho\s+chic/i, '/gifts/33-capas-almofada-boho.svg'],
-  [/40\s+clips|roupas\s+intimas|roupas\s+[íi]ntimas/i, '/gifts/34-varal-clips.svg'],
-  [/nadir|lights|vidro\s+cristalino/i, '/gifts/35-copos-lights-nadir.svg'],
-  [/jogo\s+americano|souplast|sousplat|mesa\s+posta|38cm/i, '/gifts/36-jogo-americano-sousplat.svg'],
-  [/passadeira|vapor\s+port[aá]til|mondial|vp-09|fast\s+steam/i, '/gifts/37-passadeira-mondial.svg'],
-  [/utens[ií]lios.*cozinha|silicone.*madeira|madeira.*silicone|12\s+pe[cç]as/i, '/gifts/38-utensilios-silicone-madeira.svg'],
-  [/jogo\s+de\s+panelas.*brinox|brinox.*jogo\s+de\s+panelas|ceramic\s+life\s+sirius.*6|6\s+pe[cç]as.*sirius/i, '/gifts/39-panelas-brinox-sirius.svg'],
   [/air\s*fryer|eaf85/i, '/gifts/01-air-fryer.svg'],
   [/cesto\s+de\s+bambu/i, '/gifts/02-cesto-bambu.svg'],
   [/varal/i, '/gifts/03-varal.svg'],
@@ -45,6 +75,10 @@ const LOCAL_PLACEHOLDER_BY_NAME: Array<[RegExp, string]> = [
   [/lixeira\s+pl[aá]stica|paramount/i, '/gifts/29-lixeira.svg'],
 ];
 
+function getRealPhotoByTitle(name = '') {
+  return REAL_PHOTO_BY_NAME.find(([pattern]) => pattern.test(name))?.[1] || null;
+}
+
 function getLocalPlaceholder(gift: Pick<Gift, 'name' | 'image_url'>) {
   const imageUrl = gift.image_url?.trim();
 
@@ -56,31 +90,24 @@ function getLocalPlaceholder(gift: Pick<Gift, 'name' | 'image_url'>) {
 }
 
 function shouldUseExternalDirectImage(url: string) {
-  // Fotos manuais cadastradas pelo admin continuam funcionando direto.
-  // Mas URLs automáticas da Amazon Ads e placeholders antigos são ignorados para evitar concha/imagem quebrada.
   return /^https?:\/\//i.test(url) && !/amazon-adsystem\.com\/widgets\/q/i.test(url);
 }
 
 export function getGiftImageUrl(gift: Pick<Gift, 'name' | 'image_url' | 'purchase_url'>) {
   const imageUrl = gift.image_url?.trim();
-  const purchaseUrl = gift.purchase_url?.trim();
-  const fallback = getLocalPlaceholder(gift);
 
+  // 1) Se o admin cadastrou uma URL externa direta, respeita essa imagem.
   if (imageUrl && shouldUseExternalDirectImage(imageUrl)) {
     return imageUrl;
   }
 
-  // A imagem principal agora é buscada pelo título do presente.
-  // Isso garante que todos os cards tentem exibir foto coerente com o produto,
-  // mesmo quando o link da loja bloqueia captura ou vem encurtado.
-  const params = new URLSearchParams({
-    title: gift.name || 'presente casa nova',
-    fallback,
-  });
+  // 2) Caso não tenha imagem no banco, usa uma foto real pela categoria do título.
+  // Exemplo: Frigideira -> foto de frigideira; Panelas -> foto de panelas.
+  const titlePhoto = getRealPhotoByTitle(gift.name || '');
+  if (titlePhoto) return titlePhoto;
 
-  if (purchaseUrl) params.set('url', purchaseUrl);
-
-  return `/api/product-image?${params.toString()}`;
+  // 3) Último fallback: arte local do convite, apenas para não quebrar visual.
+  return getLocalPlaceholder(gift);
 }
 
 export function handleGiftImageError(event: React.SyntheticEvent<HTMLImageElement>) {

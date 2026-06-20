@@ -5,31 +5,16 @@ import { AdminShell } from '../../components/AdminShell';
 import { Button } from '../../components/Button';
 import { supabase } from '../../lib/supabase';
 import { formatDateTime } from '../../lib/format';
-import type { Gift, Guest, InviteStatus } from '../../types/database';
+import type { Gift, Guest } from '../../types/database';
 
 type GuestForm = {
   full_name: string;
   phone: string;
-  group_name: string;
-  invite_status: InviteStatus;
 };
 
-const emptyForm: GuestForm = {
-  full_name: '',
-  phone: '',
-  group_name: 'Familiares',
-  invite_status: 'pending',
-};
+const emptyForm: GuestForm = { full_name: '', phone: '' };
 
-type Filter = 'all' | 'accessed' | 'not_accessed' | 'selected' | 'not_selected' | 'confirmed' | 'pending';
-
-function inviteStatusLabel(status?: string | null) {
-  return status === 'confirmed' ? 'Confirmado' : 'Pendente';
-}
-
-function inviteStatusClass(status?: string | null) {
-  return status === 'confirmed' ? 'bg-sage/15 text-olive' : 'bg-gold/15 text-cocoa/70';
-}
+type Filter = 'all' | 'accessed' | 'not_accessed' | 'selected' | 'not_selected';
 
 export function GuestsAdminPage() {
   const [guests, setGuests] = useState<Guest[]>([]);
@@ -66,34 +51,25 @@ export function GuestsAdminPage() {
     if (filter === 'not_accessed') return !guest.has_accessed;
     if (filter === 'selected') return Boolean(guest.selected_gift_id);
     if (filter === 'not_selected') return !guest.selected_gift_id;
-    if (filter === 'confirmed') return guest.invite_status === 'confirmed';
-    if (filter === 'pending') return guest.invite_status !== 'confirmed';
     return true;
   });
 
   function editGuest(guest: Guest) {
     setEditingId(guest.id);
-    setForm({
-      full_name: guest.full_name,
-      phone: guest.phone ?? '',
-      group_name: guest.group_name ?? 'Familiares',
-      invite_status: guest.invite_status ?? 'pending',
-    });
+    setForm({ full_name: guest.full_name, phone: guest.phone ?? '' });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async function saveGuest(event: FormEvent) {
     event.preventDefault();
     if (!form.full_name.trim()) {
-      toast.error('Informe o nome cadastrado do convidado.');
+      toast.error('Informe o primeiro nome do convidado.');
       return;
     }
 
     const payload = {
       full_name: form.full_name.trim(),
       phone: form.phone.trim() || null,
-      group_name: form.group_name.trim() || 'Familiares',
-      invite_status: form.invite_status,
     };
 
     setSaving(true);
@@ -140,8 +116,6 @@ export function GuestsAdminPage() {
 
   const filterButtons: Array<{ value: Filter; label: string }> = [
     { value: 'all', label: 'Todos' },
-    { value: 'confirmed', label: 'Confirmados' },
-    { value: 'pending', label: 'Pendentes' },
     { value: 'accessed', label: 'Acessaram' },
     { value: 'not_accessed', label: 'Não acessaram' },
     { value: 'selected', label: 'Escolheram' },
@@ -153,7 +127,7 @@ export function GuestsAdminPage() {
       <div className="mb-6 sm:mb-8">
         <p className="text-xs font-bold uppercase tracking-[.24em] text-gold">Convidados</p>
         <h1 className="mt-2 break-words font-display text-[2.35rem] leading-tight text-cocoa sm:text-5xl">Lista fechada</h1>
-        <p className="mt-2 text-sm leading-6 text-cocoa/60 sm:text-base">Somente convidados cadastrados conseguem acessar pelo nome cadastrado.</p>
+        <p className="mt-2 text-sm leading-6 text-cocoa/60 sm:text-base">Somente convidados cadastrados conseguem acessar pelo primeiro nome.</p>
       </div>
 
       <form onSubmit={saveGuest} className="mb-6 rounded-[1.75rem] border border-white bg-white/80 p-4 shadow-soft sm:mb-8 sm:rounded-[2rem] sm:p-7">
@@ -166,22 +140,8 @@ export function GuestsAdminPage() {
           )}
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
-          <label><span className="admin-label">Nome cadastrado</span><input className="admin-input" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="Ex.: Matheus Eduardo" /></label>
+          <label><span className="admin-label">Primeiro nome</span><input className="admin-input" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="Ex.: Regiane" /></label>
           <label><span className="admin-label">Telefone opcional</span><input className="admin-input" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="Ex.: (91) 99999-9999" /></label>
-          <label>
-            <span className="admin-label">Grupo</span>
-            <select className="admin-input" value={form.group_name} onChange={(e) => setForm({ ...form, group_name: e.target.value })}>
-              <option>Familiares</option>
-              <option>Amigos</option>
-            </select>
-          </label>
-          <label>
-            <span className="admin-label">Status do convite</span>
-            <select className="admin-input" value={form.invite_status} onChange={(e) => setForm({ ...form, invite_status: e.target.value as InviteStatus })}>
-              <option value="confirmed">Confirmado</option>
-              <option value="pending">Pendente</option>
-            </select>
-          </label>
         </div>
         <Button type="submit" loading={saving} className="mt-6 w-full sm:w-auto">
           <Plus className="h-4 w-4 shrink-0" />
@@ -213,16 +173,12 @@ export function GuestsAdminPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="break-words font-display text-2xl leading-tight text-cocoa">{guest.full_name}</p>
-                  <p className="mt-1 text-xs text-cocoa/45">{guest.group_name ?? 'Sem grupo'} · {guest.phone || 'Sem telefone'}</p>
+                  <p className="mt-1 text-xs text-cocoa/45">{guest.phone || 'Sem telefone'}</p>
                 </div>
-                <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${inviteStatusClass(guest.invite_status)}`}>{inviteStatusLabel(guest.invite_status)}</span>
+                <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${guest.has_accessed ? 'bg-sage/15 text-olive' : 'bg-cocoa/10 text-cocoa/50'}`}>{guest.has_accessed ? 'Acessou' : 'Não acessou'}</span>
               </div>
 
               <div className="mt-4 grid gap-3 rounded-[1.2rem] bg-white/60 p-3">
-                <div>
-                  <p className="mobile-card-label">Acesso</p>
-                  <p className="mobile-card-value">{guest.has_accessed ? 'Acessou' : 'Não acessou'}</p>
-                </div>
                 <div>
                   <p className="mobile-card-label">Presente</p>
                   <p className="mobile-card-value">{guest.selected_gift_id ? giftById.get(guest.selected_gift_id)?.name ?? 'Presente removido' : '-'}</p>
@@ -244,12 +200,10 @@ export function GuestsAdminPage() {
         </div>
 
         <div className="hidden overflow-x-auto md:block">
-          <table className="w-full min-w-[920px] text-left text-sm">
+          <table className="w-full min-w-[760px] text-left text-sm">
             <thead>
               <tr className="border-b border-cocoa/10 text-xs uppercase tracking-[.18em] text-cocoa/45">
                 <th className="py-3 pr-4">Nome</th>
-                <th className="py-3 pr-4">Grupo</th>
-                <th className="py-3 pr-4">Status</th>
                 <th className="py-3 pr-4">Acessou</th>
                 <th className="py-3 pr-4">Presente</th>
                 <th className="py-3 pr-4">Escolha</th>
@@ -263,9 +217,9 @@ export function GuestsAdminPage() {
                     <p className="font-bold">{guest.full_name}</p>
                     <p className="text-xs text-cocoa/45">{guest.phone || 'Sem telefone'}</p>
                   </td>
-                  <td className="py-4 pr-4 text-cocoa/65">{guest.group_name ?? '-'}</td>
-                  <td className="py-4 pr-4"><span className={`rounded-full px-3 py-1 text-xs font-bold ${inviteStatusClass(guest.invite_status)}`}>{inviteStatusLabel(guest.invite_status)}</span></td>
-                  <td className="py-4 pr-4"><span className={`rounded-full px-3 py-1 text-xs font-bold ${guest.has_accessed ? 'bg-sage/15 text-olive' : 'bg-cocoa/10 text-cocoa/50'}`}>{guest.has_accessed ? 'Sim' : 'Não'}</span></td>
+                  <td className="py-4 pr-4">
+                    <span className={`rounded-full px-3 py-1 text-xs font-bold ${guest.has_accessed ? 'bg-sage/15 text-olive' : 'bg-cocoa/10 text-cocoa/50'}`}>{guest.has_accessed ? 'Sim' : 'Não'}</span>
+                  </td>
                   <td className="py-4 pr-4 text-cocoa/65">{guest.selected_gift_id ? giftById.get(guest.selected_gift_id)?.name ?? 'Presente removido' : '-'}</td>
                   <td className="py-4 pr-4 text-cocoa/55">{formatDateTime(guest.selected_at)}</td>
                   <td className="py-4 text-right">
@@ -279,7 +233,7 @@ export function GuestsAdminPage() {
               ))}
               {filteredGuests.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-cocoa/50">Nenhum convidado neste filtro.</td>
+                  <td colSpan={5} className="py-10 text-center text-cocoa/50">Nenhum convidado neste filtro.</td>
                 </tr>
               )}
             </tbody>

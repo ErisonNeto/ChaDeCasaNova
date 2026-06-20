@@ -1,111 +1,85 @@
--- Corrige imagens dos itens usando links diretos de imagem.
--- Pode rodar no Supabase SQL Editor sem apagar escolhas/reservas.
-
-begin;
+-- Corrige imagens dos itens que não carregam automaticamente por links encurtados da Amazon.
+-- Pode rodar no Supabase SQL Editor sem apagar escolhas e sem alterar reservas.
 
 update public.gifts
-set image_url = $$https://m.media-amazon.com/images/I/51zqocFSQSL._AC_SX679_.jpg$$
-where purchase_url = $$https://a.co/d/0hZJsPRh$$
+set image_url = 'https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0FRHHNVLV&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1'
+where purchase_url = 'https://a.co/d/0hZJsPRh'
    or name ilike '%Air Fryer%';
 
 update public.gifts
-set image_url = $$https://m.media-amazon.com/images/I/61qHZLXZJOL._AC_SX679_.jpg$$
-where name = $$Conjunto Xícara de Café Ouro 12 Peças$$;
+set image_url = 'https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0CLSGC1BV&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1'
+where purchase_url = 'https://a.co/d/0eNxNJDK'
+   or name ilike '%Cesto de Bambu%';
 
 update public.gifts
-set image_url = $$https://static.riachuelo.com.br/RCHLO/15040585001/portrait/fa193f29a524aeee0a61fb64cf00778af07174ad.jpg?imwidth=400$$
-where name = $$Jogo de Cama Malha Camafeu Casal Preto$$;
+set image_url = 'https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0DKM4TQ7Y&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1'
+where purchase_url = 'https://a.co/d/0942pZ3k'
+   or name ilike '%Xícara%';
 
 update public.gifts
-set image_url = $$https://m.media-amazon.com/images/I/910R9JeEghL._AC_SX679_.jpg$$
-where name = $$Jogo de Assadeiras Tramontina Starflon Max Rosa 2 Peças$$;
+set image_url = 'https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0CFYRRWVL&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1'
+where purchase_url = 'https://a.co/d/0d3GXViL'
+   or name ilike '%Assadeiras%';
 
 update public.gifts
-set image_url = $$https://a-static.mlcdn.com.br/420x420/kit-20-cabide-de-madeira-adulto-marfim-organizador-closet-gancho-giratorio-kontuz-home/nawebutilidade/cabmd120/8eef5f27f8fd97a1a4487a9848516f1f.jpeg$$
-where name = $$Kit 20 Cabides de Madeira Adulto Marfim$$;
+set image_url = 'https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0BVX344FR&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1'
+where purchase_url = 'https://a.co/d/0662YUHW'
+   or name ilike '%Döhler%'
+   or name ilike '%Dohler%';
 
 update public.gifts
-set image_url = $$https://down-br.img.susercontent.com/file/br-11134207-7r98o-m8ayedf0fle9fa.webp$$
-where name = $$Kit de Banheiro Completo Bambu 4 ou 6 Peças$$;
+set image_url = 'https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0G6GF9741&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1'
+where purchase_url = 'https://a.co/d/01BcJfzL'
+   or name ilike '%Almofadas%';
 
 update public.gifts
-set image_url = $$https://m.media-amazon.com/images/I/515OJd357RL._AC_.jpg$$
-where name = $$Kit 4 Almofadas Decorativas Sofá Luxo Premium$$;
+set image_url = 'https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0DPT3V2K6&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1'
+where purchase_url = 'https://a.co/d/0acjYaMx'
+   or name ilike '%Mantas%';
 
 update public.gifts
-set image_url = $$https://m.media-amazon.com/images/I/91f9Q7ac20L._AC_SX679_.jpg$$
-where name = $$Kit 2 Mantas Decorativas Verde Oliva e Cru$$;
+set image_url = 'https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0GKPPK325&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1'
+where purchase_url = 'https://a.co/d/0bqHUX9R'
+   or name ilike '%Vasos Decorativos%'
+   or name ilike '%Vazado%';
 
 update public.gifts
-set image_url = $$https://m.media-amazon.com/images/I/41f2ogWyVoL._AC_SX679_.jpg$$
-where name = $$Trio de Vasos Decorativos Vazado Nude$$;
+set image_url = 'https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0F99HM6L4&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1'
+where purchase_url = 'https://a.co/d/07EVWWVc'
+   or name ilike '%Vaso Cone%';
 
 update public.gifts
-set image_url = $$https://m.media-amazon.com/images/I/619ADvuUI7L._AC_SX679_.jpg$$
-where name = $$Vaso Cone Bege 15cm$$;
+set image_url = 'https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0G583P6TN&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1'
+where purchase_url = 'https://a.co/d/0jdsuG65'
+   or name ilike '%Umidificador%';
 
 update public.gifts
-set image_url = $$https://m.media-amazon.com/images/I/61+wXb+0sVL._AC_SY300_SX300_QL70_ML2_.jpg$$
-where name = $$Umidificador Ultrassônico USB Madeira 7 Cores$$;
+set image_url = 'https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0CX2W9W22&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1'
+where purchase_url = 'https://a.co/d/0heMr4mU'
+   or name ilike '%Porta Temperos%';
 
 update public.gifts
-set image_url = $$https://http2.mlstatic.com/D_NQ_NP_2X_965104-CBT109877861855_032026-F-tabua-de-corte-de-marmore-para-carne.webp$$
-where name = $$Tábua de Corte de Mármore para Carne$$;
+set image_url = 'https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B076MKTNRK&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1'
+where purchase_url = 'https://a.co/d/00orRvWi'
+   or name ilike '%Facas%';
 
 update public.gifts
-set image_url = $$https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcT6MaRlld2p5ndh9b50HMrNgoJ4cNPLSfeKUg4gbSrJaXTikoQXVAS0mgpbeA37VDGuKXOFHRbvF343BUvGjxrme5CoQAU8rm_98KnH0U3J6F9xdV-Dqy4vh4A$$
-where name = $$Processador de Alimentos Electrolux EFP500 3 em 1 127V$$;
+set image_url = 'https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0B5LL9MXB&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1'
+where purchase_url = 'https://a.co/d/035dbqkh'
+   or name ilike '%Taças%';
 
 update public.gifts
-set image_url = $$https://m.media-amazon.com/images/I/71-hYCSxNUL._AC_SY300_SX300_QL70_ML2_.jpg$$
-where name = $$Porta Temperos Giratório com 12 Potes de Vidro$$;
+set image_url = 'https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0CRY48NSK&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1'
+where purchase_url = 'https://a.co/d/01z9fLEl'
+   or name ilike '%Panelas Oster%';
 
 update public.gifts
-set image_url = $$https://m.media-amazon.com/images/I/61hxcu7jkjL._AC_SX679_.jpg$$
-where name = $$Jogo de Facas Tramontina Plenus Branco 6 Peças$$;
+set image_url = 'https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0GT5XFDXD&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1'
+where purchase_url = 'https://a.co/d/09iYsO5d'
+   or name ilike '%Organizador de Pia%'
+   or name ilike '%Escorredor%';
 
 update public.gifts
-set image_url = $$https://m.media-amazon.com/images/I/61HfgRQP81L._AC_SX679_.jpg$$
-where name = $$Jogo de 6 Taças para Vinho Branco Xtra 360ml$$;
-
-update public.gifts
-set image_url = $$https://m.media-amazon.com/images/I/615g1n2LBML._AC_SX679_.jpg$$
-where name = $$Jogo de Panelas Oster Marble Edition Cream 4 Peças$$;
-
-update public.gifts
-set image_url = $$https://m.media-amazon.com/images/I/31n7Iu7d6oL._SX342_SY445_QL70_ML2_.jpg$$
-where name = $$Lixeira Plástica 10L Fly Paramount com Pedal Creme$$;
-
-update public.gifts
-set image_url = $$https://m.media-amazon.com/images/I/71+gPoidGrL._AC_SX679_.jpg$$
-where name = $$Cesto de Bambu Ecológico 65L com Tampa$$;
-
-update public.gifts
-set image_url = $$https://m.magazineluiza.com.br/a-static/420x420/sanduicheira-eletrica-cadence-click-750w-san400/magazineluiza/238024800/35ae650cc4bababf411676e2346bc871.jpg$$
-where name = $$Sanduicheira Elétrica Cadence Click 750W SAN400$$;
-
-update public.gifts
-set image_url = $$https://static.riachuelo.com.br/RCHLO/15280497001/portrait/a0bdd00270735d60b3371c36f9e2a09a002947b6.jpg?imwidth=400$$
-where name = $$Jogo de Cama Algodão 120 Fios Casal Rosa Claro$$;
-
-update public.gifts
-set image_url = $$https://m.media-amazon.com/images/I/61dz-QrP1hL._AC_SX679_.jpg$$
-where name = $$Jogo de Banho 4 Peças Romance Döhler Branco$$;
-
-update public.gifts
-set image_url = $$https://www.havan.com.br/media/catalog/product/cache/820af7facfa7aca6eb3c138e3457dc8d/t/o/toalha-super-banho-100-algodao-karsten-by-havan-casa_1221961.webp$$
-where name = $$Toalha Super Banho Karsten by Havan Casa Branco$$;
-
-update public.gifts
-set image_url = $$https://down-br.img.susercontent.com/file/br-11134207-820lr-mo1hirbgm2v47a@resize_w900_nl.webp$$
-where name = $$Kit 13 Potes Herméticos com Tampa de Bambu$$;
-
-update public.gifts
-set image_url = $$https://brinox.vteximg.com.br/arquivos/ids/284016/frigideira-antiaderente-ceramic-life-brinox-sirius-inducao-vanilla.jpg?v=639137779168300000$$
-where name = $$Frigideira de Indução Brinox Sirius 20cm Vanilla$$;
-
-update public.gifts
-set image_url = $$https://m.media-amazon.com/images/I/71uYLEMEOEL._AC_SX679_.jpg$$
-where name = $$Organizador de Pia e Escorredor de Louça Suspenso 65cm$$;
-
-commit;
+set image_url = 'https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0GKGXZ5YB&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1'
+where purchase_url = 'https://a.co/d/00GUFJ7f'
+   or name ilike '%Lixeira Plástica%';

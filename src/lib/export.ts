@@ -6,8 +6,6 @@ export function exportReport(guests: Guest[], gifts: Gift[]) {
   const giftById = new Map(gifts.map((gift) => [gift.id, gift.name]));
   const rows = guests.map((guest) => ({
     Convidado: guest.full_name,
-    Grupo: guest.group_name ?? '',
-    StatusConvite: guest.invite_status === 'confirmed' ? 'Confirmado' : 'Pendente',
     Telefone: guest.phone ?? '',
     Acessou: guest.has_accessed ? 'Sim' : 'Não',
     Presente: guest.selected_gift_id ? giftById.get(guest.selected_gift_id) ?? 'Presente removido' : '',

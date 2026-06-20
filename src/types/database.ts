@@ -1,5 +1,4 @@
 export type GiftStatus = 'available' | 'reserved';
-export type InviteStatus = 'confirmed' | 'pending';
 
 export type Gift = {
   id: string;
@@ -18,8 +17,6 @@ export type Guest = {
   id: string;
   full_name: string;
   phone: string | null;
-  group_name?: string | null;
-  invite_status?: InviteStatus | null;
   has_accessed: boolean;
   selected_gift_id: string | null;
   selected_at: string | null;

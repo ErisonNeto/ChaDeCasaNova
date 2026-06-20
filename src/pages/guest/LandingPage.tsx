@@ -40,7 +40,7 @@ export function LandingPage() {
     const accessText = normalize(credential);
 
     if (!accessText) {
-      toast.error('Informe o nome cadastrado para acessar a lista.');
+      toast.error('Informe seu primeiro nome para acessar a lista.');
       return;
     }
 
@@ -116,21 +116,21 @@ export function LandingPage() {
               <p className="premium-label">Acesso do convidado</p>
               <h2 className="mt-3 font-display text-[2.35rem] leading-tight text-cocoa sm:text-4xl">Entre com seu nome</h2>
               <p className="mt-3 text-sm leading-6 text-cocoa/62">
-                Digite seu nome exatamente como está no convite para acessar a lista de presentes.
+                Digite apenas seu primeiro nome para acessar a lista de presentes.
               </p>
 
               <form onSubmit={handleAccess} className="mt-7 space-y-5 sm:mt-8">
                 <div>
                   <label htmlFor="credential" className="premium-label mb-2 block">
-                    Nome cadastrado
+                    Primeiro nome
                   </label>
                   <input
                     id="credential"
                     className="premium-input"
-                    placeholder="Ex.: Matheus Eduardo"
+                    placeholder="Ex.: Regiane"
                     value={credential}
                     onChange={(event) => setCredential(event.target.value)}
-                    autoComplete="name"
+                    autoComplete="given-name"
                   />
                 </div>
                 <Button type="submit" loading={loading} className="w-full py-4 text-base">

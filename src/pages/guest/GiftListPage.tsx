@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, Home, RefreshCcw, Sparkles } from 'lucide-react';
+import { ArrowLeft, Home, RefreshCcw, RotateCcw, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PageShell } from '../../components/PageShell';
@@ -10,35 +10,34 @@ import { ConfirmModal } from '../../components/ConfirmModal';
 import { GiftCard } from '../../components/GiftCard';
 import { supabase } from '../../lib/supabase';
 import { getGuestSession, saveGuestSession, clearGuestSession } from '../../lib/session';
-import type { Gift } from '../../types/database';
+import type { Gift, GuestSession } from '../../types/database';
 
 export function GiftListPage() {
   const [gifts, setGifts] = useState<Gift[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedGift, setSelectedGift] = useState<Gift | null>(null);
+  const [currentSession, setCurrentSession] = useState<GuestSession | null>(() => getGuestSession());
   const [claiming, setClaiming] = useState(false);
-  const session = getGuestSession();
+  const [canceling, setCanceling] = useState(false);
   const navigate = useNavigate();
 
-  const myGiftId = session?.selectedGiftId ?? null;
+  const myGiftId = currentSession?.selectedGiftId ?? null;
+  const myGift = useMemo(() => gifts.find((gift) => gift.id === myGiftId) ?? null, [gifts, myGiftId]);
   const availableCount = useMemo(() => gifts.filter((gift) => gift.status === 'available').length, [gifts]);
 
   useEffect(() => {
-    if (!session) {
+    const savedSession = getGuestSession();
+    if (!savedSession) {
       navigate('/');
       return;
     }
 
-    if (session.selectedGiftId) {
-      navigate('/confirmacao');
-      return;
-    }
-
-    loadGifts();
+    setCurrentSession(savedSession);
+    loadGifts(true, savedSession);
 
     const channel = supabase
       .channel('public:gifts')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'gifts' }, () => loadGifts(false))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'gifts' }, () => loadGifts(false, getGuestSession()))
       .subscribe();
 
     return () => {
@@ -46,23 +45,38 @@ export function GiftListPage() {
     };
   }, []);
 
-  async function loadGifts(showLoading = true) {
+  async function loadGifts(showLoading = true, sessionToValidate = currentSession) {
     if (showLoading) setLoading(true);
     const { data, error } = await supabase
       .from('gifts')
       .select('*')
       .order('status', { ascending: true })
       .order('created_at', { ascending: true });
+
+    const nextGifts = (data ?? []) as Gift[];
+
     if (error) toast.error('Não foi possível carregar os presentes.');
-    setGifts((data ?? []) as Gift[]);
+    setGifts(nextGifts);
+
+    if (sessionToValidate?.selectedGiftId) {
+      const selected = nextGifts.find((gift) => gift.id === sessionToValidate.selectedGiftId);
+      const stillMine = selected?.status === 'reserved' && selected.reserved_by_guest_id === sessionToValidate.guestId;
+
+      if (!stillMine) {
+        const updatedSession = { ...sessionToValidate, selectedGiftId: null, selectedAt: null };
+        saveGuestSession(updatedSession);
+        setCurrentSession(updatedSession);
+      }
+    }
+
     if (showLoading) setLoading(false);
   }
 
   async function claimGift() {
-    if (!selectedGift || !session) return;
+    if (!selectedGift || !currentSession) return;
     setClaiming(true);
     const { data, error } = await supabase.rpc('claim_gift', {
-      p_guest_id: session.guestId,
+      p_guest_id: currentSession.guestId,
       p_gift_id: selectedGift.id,
     });
     setClaiming(false);
@@ -81,9 +95,37 @@ export function GiftListPage() {
       return;
     }
 
-    saveGuestSession({ ...session, selectedGiftId: selectedGift.id, selectedAt: new Date().toISOString() });
+    const updatedSession = { ...currentSession, selectedGiftId: selectedGift.id, selectedAt: new Date().toISOString() };
+    saveGuestSession(updatedSession);
+    setCurrentSession(updatedSession);
+    setSelectedGift(null);
     toast.success('Presente reservado com carinho!');
-    navigate('/confirmacao');
+    await loadGifts(false, updatedSession);
+  }
+
+  async function cancelMyChoice(gift?: Gift) {
+    if (!currentSession?.selectedGiftId) return;
+    const giftName = gift?.name ?? myGift?.name ?? 'seu presente';
+    if (!confirm(`Deseja cancelar a escolha de "${giftName}" e liberar este presente novamente?`)) return;
+
+    setCanceling(true);
+    const { data, error } = await supabase.rpc('cancel_guest_choice', {
+      p_guest_id: currentSession.guestId,
+      p_gift_id: currentSession.selectedGiftId,
+    });
+    setCanceling(false);
+
+    if (error || !data?.success) {
+      toast.error(data?.message ?? 'Não foi possível cancelar sua escolha agora.');
+      await loadGifts(false);
+      return;
+    }
+
+    const updatedSession = { ...currentSession, selectedGiftId: null, selectedAt: null };
+    saveGuestSession(updatedSession);
+    setCurrentSession(updatedSession);
+    toast.success('Escolha cancelada. Você pode escolher outro presente.');
+    await loadGifts(false, updatedSession);
   }
 
   if (loading) return <LoadingScreen />;
@@ -96,11 +138,20 @@ export function GiftListPage() {
             <ArrowLeft className="h-4 w-4 shrink-0" />
             trocar convidado
           </Link>
-          <p className="premium-label">Olá, {session?.fullName}</p>
-          <h1 className="mt-2 break-words font-display text-[2.35rem] leading-tight text-cocoa sm:text-5xl">Escolha um presente especial</h1>
+          <p className="premium-label">Olá, {currentSession?.fullName}</p>
+          <h1 className="mt-2 break-words font-display text-[2.35rem] leading-tight text-cocoa sm:text-5xl">
+            {myGiftId ? 'Sua escolha está reservada' : 'Escolha um presente especial'}
+          </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-cocoa/62">
-            Cada presente só pode ser escolhido uma vez. Ao confirmar, ele ficará reservado exclusivamente para você.
+            {myGiftId
+              ? 'Você ainda pode navegar pela lista completa. Para trocar, cancele sua escolha atual e selecione outro presente disponível.'
+              : 'Cada presente só pode ser escolhido uma vez. Ao confirmar, ele ficará reservado exclusivamente para você.'}
           </p>
+          {myGiftId && myGift && (
+            <div className="mt-4 rounded-[1.25rem] border border-gold/20 bg-gold/10 px-4 py-3 text-sm leading-6 text-cocoa/70">
+              Seu presente atual: <strong>{myGift.name}</strong>.
+            </div>
+          )}
         </div>
         <div className="grid grid-cols-2 gap-3 sm:flex sm:items-stretch lg:shrink-0">
           <div className="rounded-2xl bg-porcelain px-4 py-3 text-center shadow-soft">
@@ -111,6 +162,12 @@ export function GiftListPage() {
             <RefreshCcw className="h-4 w-4 shrink-0" />
             Atualizar
           </Button>
+          {myGiftId && (
+            <Button variant="secondary" onClick={() => cancelMyChoice()} loading={canceling} className="col-span-2 w-full sm:w-auto">
+              <RotateCcw className="h-4 w-4 shrink-0" />
+              Cancelar escolha
+            </Button>
+          )}
         </div>
       </header>
 
@@ -132,6 +189,7 @@ export function GiftListPage() {
                 isMine={myGiftId === gift.id}
                 disabled={Boolean(myGiftId)}
                 onChoose={setSelectedGift}
+                onCancelChoice={cancelMyChoice}
               />
             ))}
           </motion.div>

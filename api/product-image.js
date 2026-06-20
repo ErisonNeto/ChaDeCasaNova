@@ -11,19 +11,18 @@ const IMAGE_SEARCH_HEADERS = {
 };
 
 const A_CO_ASIN_BY_CODE = {
-  '0hZJsPRh': 'B0FRHHNVLV',
+  '0hZJsPRh': 'B0FRH96P1G',
   '0eNxNJDK': 'B0CLSGC1BV',
-  '0942pZ3k': 'B0DKM4TQ7Y',
+  '0942pZ3k': 'B0GNWNXF1W',
   '0d3GXViL': 'B0CFYRRWVL',
-  '0662YUHW': 'B0BVX344FR',
+  '0662YUHW': 'B0BVXLVGRN',
   '01BcJfzL': 'B0G6GF9741',
   '0acjYaMx': 'B0DPT3V2K6',
-  '0bqHUX9R': 'B0GKPPK325',
+  '0bqHUX9R': 'B0GKPQ7315',
   '07EVWWVc': 'B0F99HM6L4',
-  '0jdsuG65': 'B0G583P6TN',
-  '0heMr4mU': 'B0CX2W9W22',
+  '0jdsuG65': 'B08SXS57Q7',
+  '0heMr4mU': 'B0GPR1VZN6',
   '00orRvWi': 'B076MKTNRK',
-  '00tQhFB6': 'B0GF2VJ22H',
   '035dbqkh': 'B0B5LL9MXB',
   '01z9fLEl': 'B0CRY48NSK',
   '09iYsO5d': 'B0CQT38866',
@@ -31,7 +30,7 @@ const A_CO_ASIN_BY_CODE = {
 };
 
 function amazonImageFromAsin(asin) {
-  return `https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=${asin}&Format=_SL800_&ID=AsinImage&MarketPlace=BR&ServiceVersion=20070822&WS=1`;
+  return `https://m.media-amazon.com/images/P/${asin}.01._AC_SL1500_.jpg`;
 }
 
 function amazonImageFromKnownShortLink(url) {

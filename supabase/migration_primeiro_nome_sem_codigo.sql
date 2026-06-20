@@ -1,4 +1,4 @@
--- Migração: remover acesso por código e usar nome cadastrado.
+-- Migração: remover acesso por código e usar apenas primeiro nome.
 -- Rode este arquivo no SQL Editor do Supabase caso você já tenha executado uma versão anterior do banco.
 
 -- 1) Remove regras e coluna antigas de código, se existirem.
@@ -6,7 +6,7 @@ drop index if exists public.guests_access_code_unique_lower_idx;
 alter table public.guests drop constraint if exists guests_access_code_not_blank;
 alter table public.guests drop column if exists access_code;
 
--- 2) Garante que o nome do convidado seja único, para evitar ambiguidade no login por nome cadastrado.
+-- 2) Garante que o nome do convidado seja único, para evitar ambiguidade no login por primeiro nome.
 create unique index if not exists guests_full_name_unique_lower_idx
   on public.guests (lower(trim(regexp_replace(full_name, '\s+', ' ', 'g'))));
 
@@ -54,5 +54,42 @@ $$;
 
 grant execute on function public.authenticate_guest(text) to anon, authenticated;
 
--- 4) Para a lista atualizada com grupo/status, rode também:
--- supabase/migration_lista_convidados_atualizada.sql
+-- 4) Insere a lista oficial sem código, sem duplicar nomes existentes.
+insert into public.guests (full_name, phone)
+select seed.full_name, seed.phone
+from (values
+  ('Regiane', null),
+  ('Adriane', null),
+  ('Sofia', null),
+  ('Junior', null),
+  ('Juracy', null),
+  ('Keven', null),
+  ('Manu', null),
+  ('Fagner', null),
+  ('Alice', null),
+  ('Eduarda', null),
+  ('Walter', null),
+  ('Josi', null),
+  ('Juliana', null),
+  ('Naldo', null),
+  ('Lenir', null),
+  ('Erison', null),
+  ('Marluce', null),
+  ('Leanny', null),
+  ('Patricia', null),
+  ('Yone', null),
+  ('Yolanda', null),
+  ('Patrick', null),
+  ('Matheus', null),
+  ('Sigria', null),
+  ('Igor', null),
+  ('Fernanda', null),
+  ('Bruna', null),
+  ('Laura', null),
+  ('Miguel', null)
+) as seed(full_name, phone)
+where not exists (
+  select 1
+  from public.guests g
+  where lower(trim(regexp_replace(g.full_name, '\s+', ' ', 'g'))) = lower(trim(seed.full_name))
+);

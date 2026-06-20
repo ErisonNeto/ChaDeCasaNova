@@ -5,7 +5,7 @@ import { AdminShell } from '../../components/AdminShell';
 import { Button } from '../../components/Button';
 import { supabase } from '../../lib/supabase';
 import { formatCurrency, formatDateTime } from '../../lib/format';
-import { getGiftFallbackImageUrl, getGiftImageUrl, handleGiftImageError } from '../../lib/giftImages';
+import { GiftHero } from '../../components/GiftHero';
 import type { Gift, Guest } from '../../types/database';
 
 type GiftForm = {
@@ -153,7 +153,7 @@ export function GiftsAdminPage() {
             const reservedBy = gift.reserved_by_guest_id ? guestById.get(gift.reserved_by_guest_id) : null;
             return (
               <article key={gift.id} className="grid gap-4 rounded-[1.5rem] border border-cocoa/8 bg-porcelain p-4 sm:grid-cols-[120px_1fr] lg:grid-cols-[120px_1fr_auto] lg:items-center">
-                <img src={getGiftImageUrl(gift)} data-fallback={getGiftFallbackImageUrl(gift)} alt={gift.name} loading="lazy" onError={handleGiftImageError} className="h-44 w-full rounded-2xl object-cover sm:h-28 sm:w-28" />
+                <div className="overflow-hidden rounded-2xl sm:h-28 sm:w-28 [&>div]:h-full [&>div]:rounded-2xl [&>div]:border [&>div]:border-shell/70 [&_.absolute.left-4]:hidden [&_h3]:text-sm [&_h3]:leading-tight [&_.bottom-12]:hidden [&_.top-8]:top-3"><GiftHero gift={gift} compact /></div>
                 <div className="min-w-0">
                   <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                     <h3 className="break-words font-display text-2xl leading-tight">{gift.name}</h3>
